@@ -1,16 +1,11 @@
-import { Cabecalho } from './Components/Cabecalho'
-import { BarraNavegacao } from './Components/BarraNavegacao';
-import { CadUsuario } from './Pages/CadUsuario';
-import './Style/main.scss'
+import { Rotas } from "./Rotas/Rotas";
+import { BrowserRouter } from "react-router-dom";
 
 function App() {
   return (
-    <>
-      <BarraNavegacao />
-      <Cabecalho />
-      <CadUsuario />
-    </>
-  )
+    <BrowserRouter>
+      <Rotas />
+    </BrowserRouter>
+  );
 }
-
 export default App;
