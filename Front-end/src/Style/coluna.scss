@@ -1,0 +1,9 @@
+.coluna {
+    background-color: $background;
+    border: 1px solid #000000;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1 1 320px;
+}

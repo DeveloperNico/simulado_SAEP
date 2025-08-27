@@ -1,0 +1,11 @@
+@use './variables.scss' as *;
+
+.container {
+    background-color: $cor-destaque;
+    width: 100vw;
+
+    .titulo {
+        color: $font-color;
+        font-size: 24px;
+    }
+}
