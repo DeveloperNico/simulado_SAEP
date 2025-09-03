@@ -36,7 +36,7 @@
         padding: 10px;
         background-color: $cor-destaque;
         color: $link-color;
-        width: 100px;
+        width: 150px;
         border: none;
         border-radius: 5px;
         cursor: pointer;
@@ -45,6 +45,20 @@
 
     button:hover {
         background-color: darken($cor-destaque, 5%);
+    }
+
+    select {
+        width: 350px;
+        height: 35px;
+        border: 2px solid $color-gray;
+        border-radius: 5px;
+        padding: 0 10px;
+        outline: none;
+    }
+
+    option {
+        color: $link-color;
+        background-color: #007afcaf;   
     }
 }
 
