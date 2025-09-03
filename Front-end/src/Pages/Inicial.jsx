@@ -5,8 +5,10 @@ import { Outlet } from "react-router-dom";
 export function Inicial() {
     return (
         <>
-            <BarraNavegacao />
-            <Cabecalho />
+            <div className="containerCabecalho">
+                <Cabecalho />
+                <BarraNavegacao />
+            </div>
             <Outlet />
         </>
     )

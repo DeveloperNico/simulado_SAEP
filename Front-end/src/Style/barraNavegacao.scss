@@ -1,9 +1,13 @@
 @use './variables.scss' as *;
 
 .barra {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
     width: 100vw;
-    height: 40px;
+    height: 80px;
     background-color: $cor-destaque;
+    padding-right: 60px;
     
     ul {
         display: flex;
@@ -22,4 +26,8 @@
         text-decoration: none;
         color: $link-color;
     }
+}
+
+.containerCabecalho {
+    display: flex;
 }

@@ -3,6 +3,10 @@
 .container {
     background-color: $cor-destaque;
     width: 100vw;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 60px;
 
     .titulo {
         color: $link-color;
