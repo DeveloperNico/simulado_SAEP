@@ -1,0 +1,8 @@
+@use './variables.scss' as *;
+
+.tarefas {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 40px;
+}
