@@ -7,7 +7,7 @@ const usuarioSchema = z.object({
         .string()
         .min(2, { message: "O nome deve ter pelo menos 2 caracteres." })
         .max(100, { message: "O nome deve ter no máximo 100 caracteres." })
-        .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, { message: "O nome deve conter apenas letras." }),
+        .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ]+$/, { message: "O nome deve conter apenas letras." }),
     email: z.string().email({ message: "Email inválido." }),
 });
 
@@ -33,7 +33,7 @@ export function CadUsuario() {
         setErrors({});
 
         try {
-            const response = await axios.post("http://localhost:8000/api/usuarios", 
+            const response = await axios.post("http://localhost:8000/api/usuarios/", 
                 { nome, email }
             );
 

@@ -5,99 +5,83 @@ export function Quadro() {
     const [tarefas, setTarefas] = useState([]);
     const [usuarios, setUsuarios] = useState([]);
 
+    // Carregar tarefas
     useEffect(() => {
-        axios.get('http://localhost:8000/api/usuarios/')
-            .then((res) => setUsuarios(res.data))
-            .catch((err) => console.error("Erro ao carregar usuário: ", err));
-
-        axios.get('http://localhost:8000/api/tarefas/')
+        axios.get("http://localhost:8000/api/tarefas/")
             .then((res) => setTarefas(res.data))
-            .catch((err) => console.error("Erro ao carregar tarefa: ", err));
+            .catch((err) => console.error("Erro ao carregar tarefas: ", err));
     }, []);
 
-    const tarefasAFazer = tarefas.filter(t => t.status === "a_fazer");
-    const tarefasFazendo = tarefas.filter(t => t.status === "fazendo");
-    const tarefasPronto = tarefas.filter(t => t.status === "pronto");
+    // Carregar usuários
+    useEffect(() => {
+        axios.get("http://localhost:8000/api/usuarios/")
+            .then((res) => setUsuarios(res.data))
+            .catch((err) => console.error("Erro ao carregar usuários: ", err));
+    }, []);
+
+    // Função para alterar status no backend
+    const alterarStatus = (id_tarefa, novoStatus) => {
+        axios.patch(`http://localhost:8000/api/tarefas/${id_tarefa}/`, { status: novoStatus })
+            .then(() => {
+                setTarefas(prev => prev.map(t =>
+                    t.id_tarefa === id_tarefa ? { ...t, status: novoStatus } : t
+                ));
+            })
+            .catch((err) => console.error("Erro ao atualizar status: ", err));
+    };
+
+    // Card de tarefa
+    const CardTarefa = ({ t }) => {
+        const [novoStatus, setNovoStatus] = useState(t.status);
+
+        // Pegar nome do usuário pelo ID
+        const nomeUsuario = usuarios.find(u => u.id_usuario === t.usuario)?.nome || "Carregando...";
+
+        return (
+            <div className="cardTarefa">
+                <p><strong>Descrição:</strong> {t.descricao}</p>
+                <p><strong>Setor:</strong> {t.nome_setor}</p>
+                <p><strong>Prioridade:</strong> {t.prioridade}</p>
+                <p><strong>Vinculado a:</strong> {nomeUsuario}</p>
+
+                <div className="botoes">
+                    <button>Editar</button>
+                    <button>Excluir</button>
+                </div>
+
+                <div className="status">
+                    <select
+                        value={novoStatus}
+                        onChange={(e) => setNovoStatus(e.target.value)}
+                    >
+                        <option value="a fazer">A Fazer</option>
+                        <option value="fazendo">Fazendo</option>
+                        <option value="pronto">Pronto</option>
+                    </select>
+                    <button onClick={() => alterarStatus(t.id_tarefa, novoStatus)}>
+                        Alterar Status
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    // Renderiza cada coluna
+    const renderColuna = (titulo, status) => (
+        <section className={status}>
+            <h2>{titulo}</h2>
+            {tarefas
+                .filter((t) => t.status === status)
+                .map((t) => <CardTarefa key={t.id_tarefa} t={t} />)
+            }
+        </section>
+    );
 
     return (
         <main className="tarefas">
-            <section>
-                <h2>A Fazer</h2>
-                {tarefasAFazer.map((t) => (
-                    <div key={t.id} className="cardTarefa">
-                        <p><strong>Descrição:</strong> {t.descricao}</p>
-                        <p><strong>Setor:</strong> {t.setor}</p>
-                        <p><strong>Prioridade:</strong> {t.prioridade}</p>
-                        <p><strong>Vinculado a:</strong> {t.usuario_nome}</p>
-
-                        <div className="botoes">
-                            <button>Editar</button>
-                            <button>Excluir</button>
-                        </div>
-
-                        <div className="status">
-                            <select defaultValue={t.status}>
-                                <option value="a_fazer">A Fazer</option>
-                                <option value="fazendo">Fazendo</option>
-                                <option value="pronto">Pronto</option>
-                            </select>
-                            <button>Alterar Status</button>
-                        </div>
-                    </div>
-                ))}
-            </section>
-
-            <section>
-                <h2>Fazendo</h2>
-                {tarefasFazendo.map((t) => (
-                    <div key={t.id} className="cardTarefa">
-                        <p><strong>Descrição:</strong> {t.descricao}</p>
-                        <p><strong>Setor:</strong> {t.setor}</p>
-                        <p><strong>Prioridade:</strong> {t.prioridade}</p>
-                        <p><strong>Vinculado a:</strong> {t.usuario_nome}</p>
-
-                        <div className="botoes">
-                            <button>Editar</button>
-                            <button>Excluir</button>
-                        </div>
-
-                        <div className="status">
-                            <select defaultValue={t.status}>
-                                <option value="a_fazer">A Fazer</option>
-                                <option value="fazendo">Fazendo</option>
-                                <option value="pronto">Pronto</option>
-                            </select>
-                            <button>Alterar Status</button>
-                        </div>
-                    </div>
-                ))}
-            </section>
-
-            <section>
-                <h2>Pronto</h2>
-                {tarefasPronto.map((t) => (
-                    <div key={t.id} className="cardTarefa">
-                        <p><strong>Descrição:</strong> {t.descricao}</p>
-                        <p><strong>Setor:</strong> {t.setor}</p>
-                        <p><strong>Prioridade:</strong> {t.prioridade}</p>
-                        <p><strong>Vinculado a:</strong> {t.usuario_nome}</p>
-
-                        <div className="botoes">
-                            <button>Editar</button>
-                            <button>Excluir</button>
-                        </div>
-
-                        <div className="status">
-                            <select defaultValue={t.status}>
-                                <option value="a_fazer">A Fazer</option>
-                                <option value="fazendo">Fazendo</option>
-                                <option value="pronto">Pronto</option>
-                            </select>
-                            <button>Alterar Status</button>
-                        </div>
-                    </div>
-                ))}
-            </section>
+            {renderColuna("A Fazer", "a fazer")}
+            {renderColuna("Fazendo", "fazendo")}
+            {renderColuna("Pronto", "pronto")}
         </main>
     );
 }
