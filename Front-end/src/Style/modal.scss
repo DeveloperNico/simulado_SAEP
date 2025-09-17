@@ -1,0 +1,105 @@
+@use './variables.scss' as *;
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    overflow-y: auto; // garante scroll se modal for maior que tela
+}
+
+.modal {
+    background: #fff;
+    border-radius: 10px;
+    padding: 40px;
+    width: 598px;
+    max-width: 90%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.25);
+
+    /* Centralização absoluta confiável */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001; // acima da overlay
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Poppins', sans-serif;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    label {
+        margin-top: 20px;
+    }
+
+    input {
+        width: 500px;
+        border: none;
+        background-color: #e9e9e9;
+        padding: 10px;
+        outline: none;
+        margin-top: 5px;
+        border-radius: 5px;
+    }
+
+    input:focus {
+        outline: 3px solid #d1d1d1;
+    }
+
+    select {
+        width: 100px;
+        background-color: #e9e9e9;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        cursor: pointer;
+        margin-left: 20px;
+        outline: none;
+    }
+
+    button {
+        background-color: $cor-destaque;
+        border: none;
+        color: $link-color;
+        width: 200px;
+        padding: 10px;
+    }
+}
+
+.closeButton {
+    background-color: #eb2525;
+    border: none;
+    padding: 5px;
+    width: 30px;
+    height: 30px;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease-in-out;
+}
+
+.closeButton:hover {
+    background-color: #d21f1f;
+}
