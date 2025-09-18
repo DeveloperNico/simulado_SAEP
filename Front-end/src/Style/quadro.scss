@@ -56,3 +56,14 @@
         }
     }
 }
+
+.coluna-hover {
+  background-color: #89c2ff9c;
+  border: 2px dashed #117ff59c;
+  padding: 10px;
+}
+
+.cardTarefa.dragging {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  background-color: rgb(207, 207, 207);
+}

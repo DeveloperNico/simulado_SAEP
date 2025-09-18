@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Modal } from "./Modal";
+import Swal from "sweetalert2";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 export function Quadro() {
     const [tarefas, setTarefas] = useState([]);
@@ -91,52 +93,130 @@ export function Quadro() {
 
     const getNomeUsuario = (id) => usuarios.find(u => u.id_usuario === id)?.nome || "Carregando...";
 
-    const CardTarefa = ({ t }) => {
+    const handleDelete = (id_tarefa) => {
+        Swal.fire({
+            title: "Tem certeza?",
+            text: "Você não poderá reverter isso!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Sim, excluir!",
+            cancelButtonText: "Cancelar"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axios.delete(`http://localhost:8000/api/tarefas/${id_tarefa}/`)
+                    .then(() => {
+                        setTarefas(prev => prev.filter(t => t.id_tarefa !== id_tarefa));
+                        Swal.fire("Excluído!", "A tarefa foi removida.", "success");
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire("Erro!", "Não foi possível excluir a tarefa.", "error");
+                    });
+            }
+        });
+    };
+
+    // Função para arrastar os cards
+    const onDragEnd = (result) => {
+        if (!result.destination) return;
+
+        const { source, destination, draggableId } = result;
+
+        if (source.droppableId === destination.droppableId && source.index === destination.index) {
+            return
+        }
+
+        const novoStatus = destination.droppableId
+
+        setTarefas(prev => {
+            let novaLista = Array.from(prev);
+
+            const tarefaMovida = novaLista.find(t => t.id_tarefa.toString() === draggableId);
+
+            if (tarefaMovida) {
+                tarefaMovida.status = destination.droppableId;
+            }
+
+            novaLista = novaLista.filter(t => t.id_tarefa.toString() !== draggableId);
+
+            // Separa as da coluna de destino
+            const antes = novaLista.filter(t => t.status !== destination.droppableId);
+            const colunaDestino = novaLista.filter(t => t.status === destination.droppableId);
+
+            // Insere na nova posição
+            colunaDestino.splice(destination.index, 0, tarefaMovida);
+
+            // Junta de volta
+            return [...antes, ...colunaDestino];
+        })
+
+        axios.patch(`http://localhost:8000/api/tarefas/${draggableId}/`, {
+            status: destination.droppableId
+        }).catch(err => console.error(err));
+    };
+
+    const CardTarefa = ({ t, index }) => {
         const [novoStatus, setNovoStatus] = useState(t.status);
 
         return (
-            <div className="cardTarefa">
-                <p><strong>Descrição:</strong> {t.descricao}</p>
-                <p><strong>Setor:</strong> {t.nome_setor}</p>
-                <p><strong>Prioridade:</strong> {t.prioridade}</p>
-                <p><strong>Vinculado a:</strong> {getNomeUsuario(t.usuario)}</p>
+            <Draggable draggableId={t.id_tarefa.toString()} index={index}>
+                {(provided, snapshot) => (
+                    <div className={`cardTarefa ${snapshot.isDragging ? "dragging" : ""}`} ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                        <p><strong>Descrição:</strong> {t.descricao}</p>
+                        <p><strong>Setor:</strong> {t.nome_setor}</p>
+                        <p><strong>Prioridade:</strong> {t.prioridade}</p>
+                        <p><strong>Vinculado a:</strong> {getNomeUsuario(t.usuario)}</p>
 
-                <div className="botoes">
-                    <button onClick={() => handleOpenEdit(t)}>Editar</button>
-                </div>
+                        <div className="botoes">
+                            <button onClick={() => handleOpenEdit(t)}>Editar</button>
+                            <button onClick={() => handleDelete(t.id_tarefa)}>Excluir</button>
+                        </div>
 
-                <div className="status">
-                    <select
-                        value={novoStatus}
-                        onChange={(e) => setNovoStatus(e.target.value)}
-                    >
-                        <option value="a fazer">A Fazer</option>
-                        <option value="fazendo">Fazendo</option>
-                        <option value="pronto">Pronto</option>
-                    </select>
-                    <button onClick={() => alterarStatus(t.id_tarefa, novoStatus)}>
-                        Alterar Status
-                    </button>
-                </div>
-            </div>
+                        <div className="status">
+                            <select
+                                value={novoStatus}
+                                onChange={(e) => setNovoStatus(e.target.value)}
+                            >
+                                <option value="a fazer">A Fazer</option>
+                                <option value="fazendo">Fazendo</option>
+                                <option value="pronto">Pronto</option>
+                            </select>
+                            <button onClick={() => alterarStatus(t.id_tarefa, novoStatus)}>
+                                Alterar Status
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </Draggable>
         );
     };
 
     const renderColuna = (titulo, status) => (
-        <section className={status}>
-            <h2>{titulo}</h2>
-            {tarefas.filter(t => t.status === status)
-                .map(t => <CardTarefa key={t.id_tarefa} t={t} />)}
-        </section>
+        <Droppable droppableId={status}>
+            {(provided, snapshot) => (
+                <section className={`coluna ${snapshot.isDraggingOver ? "coluna-hover" : ""}`} ref={provided.innerRef} {...provided.droppableProps} >
+                    <h2>{titulo}</h2>
+                    {tarefas.filter(t => t.status === status)
+                        .map((t, index) => (
+                            <CardTarefa key={t.id_tarefa} t={t} index={index} />
+                        ))}
+                    {provided.placeholder}
+                </section>
+            )}
+        </Droppable>
     );
 
     return (
         <>
-            <main className="tarefas">
-                {renderColuna("A Fazer", "a fazer")}
-                {renderColuna("Fazendo", "fazendo")}
-                {renderColuna("Pronto", "pronto")}
-            </main>
+            <DragDropContext onDragEnd={onDragEnd}>
+                <main className="tarefas">
+                    {renderColuna("A Fazer", "a fazer")}
+                    {renderColuna("Fazendo", "fazendo")}
+                    {renderColuna("Pronto", "pronto")}
+                </main>
+            </DragDropContext>
 
             <Modal isOpen={showModal} onClose={resetForm}>
                 <h2>{isEditing ? "Editar Tarefa" : "Nova Tarefa"}</h2>
