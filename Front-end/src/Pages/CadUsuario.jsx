@@ -49,13 +49,13 @@ export function CadUsuario() {
         <form className="formulario" onSubmit={handleSubmit} noValidate>
             <h1 className="titulo">Cadastro de usuários</h1>
 
-            <label>Nome:
-                <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Digite aqui..."/>
+            <label htmlFor="nome">Nome:
+                <input id="nome" type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Digite aqui..."/>
                     {errors.nome && <span className="error">{errors.nome}</span>}
             </label>
 
-            <label>Email:
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="exemplo@gmail.com"/>
+            <label htmlFor="email">Email:
+                <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="exemplo@gmail.com"/>
                 {errors.email && <span className="error">{errors.email}</span>}
             </label>
 
