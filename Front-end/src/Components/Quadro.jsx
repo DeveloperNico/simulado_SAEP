@@ -197,7 +197,7 @@ export function Quadro() {
     const renderColuna = (titulo, status) => (
         <Droppable droppableId={status}>
             {(provided, snapshot) => (
-                <section className={`coluna ${snapshot.isDraggingOver ? "coluna-hover" : ""}`} ref={provided.innerRef} {...provided.droppableProps} role="region" aria-labelledby={`titulo-${status}`}>
+                <section className={`coluna ${snapshot.isDraggingOver ? "coluna-hover" : ""}`} ref={provided.innerRef} {...provided.droppableProps} aria-labelledby={`titulo-${status}`}>
                     <h2 id={`titulo-${status}`}>{titulo}</h2>
                     {tarefas.filter(t => t.status === status)
                         .map((t, index) => (
