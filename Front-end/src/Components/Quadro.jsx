@@ -163,7 +163,7 @@ export function Quadro() {
         return (
             <Draggable draggableId={t.id_tarefa.toString()} index={index}>
                 {(provided, snapshot) => (
-                    <div className={`cardTarefa ${snapshot.isDragging ? "dragging" : ""}`} ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                    <section className={`cardTarefa ${snapshot.isDragging ? "dragging" : ""}`} ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} role="group" aria-label={`Tarefa: ${t.descricao}, prioridade ${t.prioridade}, vinculada a ${getNomeUsuario(t.usuario)}`}>
                         <p><strong>Descrição:</strong> {t.descricao}</p>
                         <p><strong>Setor:</strong> {t.nome_setor}</p>
                         <p><strong>Prioridade:</strong> {t.prioridade}</p>
@@ -176,6 +176,7 @@ export function Quadro() {
 
                         <div className="status">
                             <select
+                                aria-label={`Alterar status da tarefa ${t.descricao}`}
                                 value={novoStatus}
                                 onChange={(e) => setNovoStatus(e.target.value)}
                             >
@@ -183,11 +184,11 @@ export function Quadro() {
                                 <option value="fazendo">Fazendo</option>
                                 <option value="pronto">Pronto</option>
                             </select>
-                            <button onClick={() => alterarStatus(t.id_tarefa, novoStatus)}>
+                            <button onClick={() => alterarStatus(t.id_tarefa, novoStatus)} aria-label={`Alterar status da tarefa ${t.descricao} para ${novoStatus}`}>
                                 Alterar Status
                             </button>
                         </div>
-                    </div>
+                    </section>
                 )}
             </Draggable>
         );
@@ -196,8 +197,8 @@ export function Quadro() {
     const renderColuna = (titulo, status) => (
         <Droppable droppableId={status}>
             {(provided, snapshot) => (
-                <section className={`coluna ${snapshot.isDraggingOver ? "coluna-hover" : ""}`} ref={provided.innerRef} {...provided.droppableProps} >
-                    <h2>{titulo}</h2>
+                <section className={`coluna ${snapshot.isDraggingOver ? "coluna-hover" : ""}`} ref={provided.innerRef} {...provided.droppableProps} role="region" aria-labelledby={`titulo-${status}`}>
+                    <h2 id={`titulo-${status}`}>{titulo}</h2>
                     {tarefas.filter(t => t.status === status)
                         .map((t, index) => (
                             <CardTarefa key={t.id_tarefa} t={t} index={index} />
@@ -218,8 +219,8 @@ export function Quadro() {
                 </main>
             </DragDropContext>
 
-            <Modal isOpen={showModal} onClose={resetForm}>
-                <h2>{isEditing ? "Editar Tarefa" : "Nova Tarefa"}</h2>
+            <Modal isOpen={showModal} onClose={resetForm} role="dialog" aria-modal="true" aria-labelledby="Editar tarefa">
+                <h2>{isEditing ? "Editar Tarefa" : ""}</h2>
                 <form onSubmit={handleSubmit} className="form">
                     <label>
                         Descrição:

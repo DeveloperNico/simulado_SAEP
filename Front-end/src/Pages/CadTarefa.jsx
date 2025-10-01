@@ -80,21 +80,40 @@ export function CadTarefa() {
     };
 
     return (
-        <form className="formulario" onSubmit={handleSubmit}>
+        <form className="formulario" onSubmit={handleSubmit} aria-labelledby="cadastro-de-tarefa">
             <h1>Cadastro de tarefa</h1>
 
             <label>Descrição:
-                <input type="text" value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Digite a descrição..."/>
+                <input id="descricao"
+                    type="text"
+                    value={descricao}
+                    onChange={(e) => setDescricao(e.target.value)}
+                    placeholder="Digite a descrição..."
+                    aria-describedby={errors.descricao ? "descricao-error" : undefined}
+                    aria-invalid={!!errors.descricao}
+                />
                 {errors.descricao && <span className="error">{errors.descricao}</span>}
             </label>
 
             <label>Setor:
-                <input type="text" value={setor} onChange={(e) => setSetor(e.target.value)} placeholder="Digite o setor..."/>
+                <input id="setor"
+                    type="text"
+                    value={setor}
+                    onChange={(e) => setSetor(e.target.value)}
+                    placeholder="Digite o setor..."
+                    aria-describedby={errors.setor ? "setor-error" : undefined}
+                    aria-invalid={!!errors.setor}
+                />
                 {errors.setor && <span className="error">{errors.setor}</span>}
             </label>
 
             <label>Usuário:
-                <select value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)}>
+                <select id="usuarioId"
+                    value={usuarioId}
+                    onChange={(e) => setUsuarioId(e.target.value)}
+                    aria-describedby={errors.usuarioId ? "usuario-error" : undefined}
+                    aria-invalid={!!errors.usuarioId}
+                >
                     <option value="">Selecione um usuário</option>
                     {usuarios.map((u) => (
                         <option key={u.id_usuario} value={u.id_usuario}>
@@ -106,7 +125,12 @@ export function CadTarefa() {
             </label>
 
             <label>Prioridade:
-                <select value={prioridade} onChange={(e) => setPrioridade(e.target.value)}>
+                <select id="prioridade" 
+                    value={prioridade}
+                    onChange={(e) => setPrioridade(e.target.value)}
+                    aria-describedby={errors.prioridade ? "prioridade-error" : undefined}
+                    aria-invalid={!!errors.prioridade}    
+                >
                     <option value="">Selecione a prioridade</option>
                     <option value="Alta">Alta</option>
                     <option value="Média">Média</option>
