@@ -5,11 +5,13 @@ import { z } from "zod";
 const tarefaSchema = z.object({
   descricao: z
     .string()
+    .trim()
     .min(5, { message: "A descrição deve ter pelo menos 5 caracteres." })
     .max(255, { message: "A descrição deve ter no máximo 255 caracteres." })
     .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,!?]+$/, { message: "A descrição contém caracteres inválidos." }),
   setor: z
     .string()
+    .trim()
     .min(2, { message: "O setor deve ter pelo menos 2 caracteres." })
     .max(100, { message: "O setor deve ter no máximo 100 caracteres." })
     .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, { message: "O setor deve conter apenas letras." }),
@@ -139,7 +141,7 @@ export function CadTarefa() {
                 {errors.prioridade && <span className="error">{errors.prioridade}</span>}
             </label>
 
-            <button type="submit">Cadastrar tarefa</button>
+            <button name="Cadastrar Tarefa" type="submit">Cadastrar tarefa</button>
         </form>
     )
 }

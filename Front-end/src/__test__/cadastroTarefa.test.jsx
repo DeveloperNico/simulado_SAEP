@@ -1,38 +1,192 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CadTarefa } from '../Pages/CadTarefa';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
-describe("Cadastro de Tarefa", () => { // Fala o que está sendo testado
-    it("Deve renderizar o formulário de cadastro", () => { // Descreve qual o comportamento esperado
-        render(<CadTarefa />); // Renderiaza o componente que vai ser testado
+describe("CadTarefa - testes completos", () => {
 
-        // getByLabelText: procura pelo texto do label associado ao input
-        const descricaoInput = screen.getByLabelText(/Descrição/i); // Pega o input que tem o label "Descrição"
-        const setorInput = screen.getByLabelText(/Setor/i); // Pega o input que tem o label "Setor"
-        const usuarioSelect = screen.getByLabelText(/Usuário/i); // Pega o select que tem o label "Usuário"
-        const prioridadeSelect = screen.getByLabelText(/Prioridade/i); // Pega o select que tem o label "Prioridade"
+  // 1. Renderização do formulário
+  it("Deve renderizar todos os campos", () => {
+    render(<CadTarefa />);
+    expect(screen.getByLabelText(/Descrição/i)).toBeTruthy();
+    expect(screen.getByLabelText(/Setor/i)).toBeTruthy();
+    expect(screen.getByLabelText(/Usuário/i)).toBeTruthy();
+    expect(screen.getByLabelText(/Prioridade/i)).toBeTruthy();
+  });
 
-        // expect: função que faz a verificação
-        // toBeTruthy: Verifica se o elemento existe na tela
-        expect(descricaoInput).toBeTruthy(); // Verifica se o input de descrição foi renderizado
-        expect(setorInput).toBeTruthy(); // Verifica se o input de setor foi renderizado
-        expect(usuarioSelect).toBeTruthy(); // Verifica se o select de usuário foi renderizado
-        expect(prioridadeSelect).toBeTruthy(); // Verifica se o select de prioridade foi renderizado
+  // 2. Inputs atualizam
+  it("Deve permitir digitar nos inputs", () => {
+    render(<CadTarefa />);
+    const desc = screen.getByLabelText(/Descrição/i);
+    const setor = screen.getByLabelText(/Setor/i);
+    fireEvent.change(desc, { target: { value: "Teste" } });
+    fireEvent.change(setor, { target: { value: "TI" } });
+    expect(desc.value).toBe("Teste");
+    expect(setor.value).toBe("TI");
+  });
+
+  // 3. Campos vazios
+  it("Deve exibir erros ao enviar formulário vazio", async () => {
+    render(<CadTarefa />);
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/A descrição deve ter pelo menos 5 caracteres./i)).toBeTruthy();
+      expect(screen.getByText(/O setor deve ter pelo menos 2 caracteres./i)).toBeTruthy();
+      expect(screen.getByText(/Selecione um usuário./i)).toBeTruthy();
+      expect(screen.getByText(/Selecione uma prioridade válida./i)).toBeTruthy();
     });
-});
+  });
 
-describe("Validação de Formulário", () => {
-    it("Deve mostrar mensagens de erro para campos os campos que estão com errados", () => {
-        render(<CadTarefa />);
-
-        const botao = screen.getByRole('button', { name: /Cadastrar/i }); // getByRole: procura pelo papel do elemento, nesse caso o papel é button
-        fireEvent.click(botao); // Simula o clique no botão com o fireEvent
-
-        waitFor(() => { // waitFor: espera até que as expectativas dentro dela sejam verdadeiras
-            expect(screen.getByText(/A descrição deve ter pelo menos 5 caracteres./i)).toBeTruthy(); // getByText: procura pelo texto que está sendo exibido na tela
-            expect(screen.getByText(/O setor deve ter pelo menos 2 caracteres./i)).toBeTruthy();
-            expect(screen.getByText(/Selecione um usuário./i)).toBeTruthy();
-            expect(screen.getByText(/Selecione uma prioridade válida./i)).toBeTruthy();
-        });
+  // 4. Apenas espaços
+  it("Não permite apenas espaços na descrição e setor", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "   " } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "  " } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/A descrição deve ter pelo menos 5 caracteres./i)).toBeTruthy();
+      expect(screen.getByText(/O setor deve ter pelo menos 2 caracteres./i)).toBeTruthy();
     });
+  });
+
+  // 5. Descrição acima do limite
+  it("Deve gerar erro se descrição > 255 caracteres", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "A".repeat(256) } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "TI" } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/A descrição deve ter no máximo 255 caracteres./i)).toBeTruthy();
+    });
+  });
+
+  // 6. Setor acima do limite
+  it("Deve gerar erro se setor > 100 caracteres", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "Teste válido" } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "A".repeat(101) } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/O setor deve ter no máximo 100 caracteres./i)).toBeTruthy();
+    });
+  });
+
+  // 7. Descrição abaixo do mínimo
+  it("Erro se descrição < 5 caracteres", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "Abc" } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "TI" } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/A descrição deve ter pelo menos 5 caracteres./i)).toBeTruthy();
+    });
+  });
+
+  // 8. Setor abaixo do mínimo
+  it("Erro se setor < 2 caracteres", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "Descrição válida" } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "A" } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/O setor deve ter pelo menos 2 caracteres./i)).toBeTruthy();
+    });
+  });
+
+  // 9. Caracteres inválidos na descrição
+  it("Erro se descrição contiver caracteres inválidos", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "!@#$%" } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "TI" } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/A descrição contém caracteres inválidos./i)).toBeTruthy();
+    });
+  });
+
+  // 10. Caracteres inválidos no setor
+  it("Erro se setor contiver números ou símbolos", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "Descrição" } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "T1!" } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/O setor deve conter apenas letras./i)).toBeTruthy();
+    });
+  });
+
+  // 11. Usuário não selecionado
+  it("Erro se usuário não for selecionado", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "Descrição" } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "TI" } });
+    fireEvent.change(screen.getByLabelText(/Prioridade/i), { target: { value: "Alta" } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/Selecione um usuário./i)).toBeTruthy();
+    });
+  });
+
+  // 12. Prioridade não selecionada
+  it("Erro se prioridade não for selecionada", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "Descrição" } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "TI" } });
+    fireEvent.change(screen.getByLabelText(/Usuário/i), { target: { value: "João" } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/Selecione uma prioridade válida./i)).toBeTruthy();
+    });
+  });
+
+  // 13. Prioridade inválida
+  it("Erro se prioridade for inválida", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "Teste" } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "TI" } });
+    fireEvent.change(screen.getByLabelText(/Usuário/i), { target: { value: "João" } });
+    fireEvent.change(screen.getByLabelText(/Prioridade/i), { target: { value: "Urgente" } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/Selecione uma prioridade válida./i)).toBeTruthy();
+    });
+  });
+
+  // 14. Múltiplos erros aparecem juntos
+  it("Mostra todos os erros juntos", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "   " } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "A" } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/A descrição deve ter pelo menos 5 caracteres./i)).toBeTruthy();
+      expect(screen.getByText(/O setor deve ter pelo menos 2 caracteres./i)).toBeTruthy();
+      expect(screen.getByText(/Selecione um usuário./i)).toBeTruthy();
+      expect(screen.getByText(/Selecione uma prioridade válida./i)).toBeTruthy();
+    });
+  });
+
+  // 15. Usuário inválido
+  it("Erro se usuário não estiver na lista", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "Descrição válida" } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "TI" } });
+    fireEvent.change(screen.getByLabelText(/Usuário/i), { target: { value: "Inexistente" } });
+    fireEvent.change(screen.getByLabelText(/Prioridade/i), { target: { value: "Alta" } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    // Aqui precisaria do mock de usuários para validar, mas pelo schema podemos verificar se não selecionou
+    await waitFor(() => {
+      expect(screen.getByText(/Selecione um usuário./i)).toBeTruthy();
+    });
+  });
+
+  // 16. Setor com números → erro
+  it("Erro se setor contiver números", async () => {
+    render(<CadTarefa />);
+    fireEvent.change(screen.getByLabelText(/Descrição/i), { target: { value: "Descrição" } });
+    fireEvent.change(screen.getByLabelText(/Setor/i), { target: { value: "TI123" } });
+    fireEvent.click(screen.getByRole('button', { name: /Cadastrar Tarefa/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/O setor deve conter apenas letras./i)).toBeTruthy();
+    });
+  });
 });

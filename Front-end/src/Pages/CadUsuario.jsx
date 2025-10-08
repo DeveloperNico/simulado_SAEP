@@ -5,10 +5,11 @@ import { z } from "zod";
 const usuarioSchema = z.object({
     nome: z
         .string()
+        .trim()
         .min(2, { message: "O nome deve ter pelo menos 2 caracteres." })
         .max(100, { message: "O nome deve ter no máximo 100 caracteres." })
         .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ]+$/, { message: "O nome deve conter apenas letras." }),
-    email: z.string().email({ message: "Email inválido." }),
+    email: z.string().trim().email({ message: "Email inválido." }),
 });
 
 export function CadUsuario() {
